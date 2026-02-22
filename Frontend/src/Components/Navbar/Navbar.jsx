@@ -124,8 +124,8 @@ const Header = () => {
     <>
       <Navbar key="md" expand="md" className="bg-body-primary" style={{ backgroundColor: "#3BB4A1", zIndex: 998 }}>
         <Container fluid>
-          <Navbar.Brand href="/" style={{ fontFamily: "Josefin Sans, sans-serif", color: "#2d2d2d", fontWeight: 500 }}>
-            SKILL SWAP
+            <Navbar.Brand href="/" style={{ fontFamily: "Josefin Sans, sans-serif", color: "#2d2d2d", fontWeight: 500 }}>
+            SkillXchange
           </Navbar.Brand>
           <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-md`} />
           <Navbar.Offcanvas
@@ -133,12 +133,12 @@ const Header = () => {
             aria-labelledby={`offcanvasNavbarLabel-expand-md`}
             placement="end"
           >
-            <Offcanvas.Header closeButton>
+              <Offcanvas.Header closeButton>
               <Offcanvas.Title
                 id={`offcanvasNavbarLabel-expand-md`}
                 style={{ fontFamily: "Josefin Sans, sans-serif", color: "#028477" }}
               >
-                SKILL SWAP
+                SkillXchange
               </Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
