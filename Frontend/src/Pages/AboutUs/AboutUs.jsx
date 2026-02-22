@@ -55,7 +55,7 @@ const AboutUs = () => {
           <br />
           We believe in the power of learning and sharing knowledge. Our platform connects individuals
           from diverse backgrounds to exchange practical skills and expertise. Whether you're a seasoned professional
-          looking to mentor others or a beginner eager to learn, SkillSwap provides a supportive environment for growth
+          looking to mentor others or a beginner eager to learn, the platform provides a supportive environment for growth
           and collaboration.
           <br />
           <br />
