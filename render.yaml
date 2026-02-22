@@ -25,14 +25,3 @@ services:
         sync: false
       - key: GOOGLE_CALLBACK_URL
         sync: false
-
-  - type: static_site
-    name: skillxchange-frontend
-    rootDir: Frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_SERVER_URL
-        sync: false
-      - key: VITE_LOCALHOST
-        sync: false
