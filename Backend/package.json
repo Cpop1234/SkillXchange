@@ -1,14 +1,14 @@
 {
-    "name": "skillswap_backend",
+    "name": "skillxchange-backend",
     "version": "1.0.0",
-    "description": "This is the backend of skillswap project.",
+    "description": "Backend service for SkillXchange application.",
     "main": "index.js",
     "type": "module",
     "scripts": {
         "dev": "nodemon src/index.js",
         "start": "node src/index.js"
     },
-    "author": "",
+    "author": "Patil",
     "license": "ISC",
     "dependencies": {
         "cloudinary": "^2.0.1",
