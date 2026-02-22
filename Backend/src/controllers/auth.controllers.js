@@ -11,6 +11,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 dotenv.config();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:8000/auth/google/callback";
+const isProd = process.env.NODE_ENV === "production";
 
 let googleAuthHandler;
 let googleAuthCallback;
@@ -55,12 +56,19 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   console.log("\n******** Inside handleGoogleLoginCallback function ********");
   // console.log("User Google Info", req.user);
 
+  const buildCookieOptions = (expiryDate) => ({
+    httpOnly: true,
+    expires: expiryDate,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
+
   const existingUser = await User.findOne({ email: req.user._json.email });
 
   if (existingUser) {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
-    res.cookie("accessToken", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+    res.cookie("accessToken", jwtToken, buildCookieOptions(expiryDate));
     return res.redirect(`${FRONTEND_URL}/discover`);
   }
 
@@ -75,7 +83,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   }
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
-  res.cookie("accessTokenRegistration", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+  res.cookie("accessTokenRegistration", jwtToken, buildCookieOptions(expiryDate));
   return res.redirect(`${FRONTEND_URL}/register`);
 });
 
