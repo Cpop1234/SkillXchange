@@ -47,13 +47,13 @@ const AboutUs = () => {
         <p style={descriptionStyle}>
           <i>
             As students, we have looked for upskilling everywhere. Mostly, we end up paying big amounts to gain
-            certifications and learn relevant skills. We thought of SkillSwap to resolve that. Learning new skills and
+              certifications and learn relevant skills. We created this platform to resolve that. Learning new skills and
             gaining more knowledge all while networking with talented people!
           </i>
         </p>
         <p style={descriptionStyle}>
           <br />
-          At SkillSwap, we believe in the power of learning and sharing knowledge. Our platform connects individuals
+          We believe in the power of learning and sharing knowledge. Our platform connects individuals
           from diverse backgrounds to exchange practical skills and expertise. Whether you're a seasoned professional
           looking to mentor others or a beginner eager to learn, SkillSwap provides a supportive environment for growth
           and collaboration.

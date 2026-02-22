@@ -215,13 +215,13 @@ const Header = () => {
                       style={{ fontFamily: "Montserrat, sans-serif", color: "#2d2d2d" }}
                     >
                       About Us
-                    </Nav.Link>
+                      </Nav.Link>
                     <Nav.Link
                       as={Link}
-                      to="/#why-skill-swap"
+                      to="/#why-skillxchange"
                       style={{ fontFamily: "Montserrat, sans-serif", color: "#2d2d2d" }}
                     >
-                      Why SkillSwap
+                      Why SkillXchange
                     </Nav.Link>
                     <Nav.Link as={Link} to="/login" style={{ fontFamily: "Montserrat, sans-serif", color: "#2d2d2d" }}>
                       Login/Register
