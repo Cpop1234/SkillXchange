@@ -9,6 +9,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 dotenv.config();
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:8000/auth/google/callback";
 
 let googleAuthHandler;
 let googleAuthCallback;
@@ -19,7 +21,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "/auth/google/callback",
+        callbackURL: GOOGLE_CALLBACK_URL,
       },
       async (accessToken, refreshToken, profile, done) => {
         done(null, profile);
@@ -32,7 +34,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   });
 
   googleAuthCallback = passport.authenticate("google", {
-    failureRedirect: "http://localhost:5173/login",
+    failureRedirect: `${FRONTEND_URL}/login`,
     session: false,
   });
 } else {
@@ -59,7 +61,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
     res.cookie("accessToken", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
-    return res.redirect(`http://localhost:5173/discover`);
+    return res.redirect(`${FRONTEND_URL}/discover`);
   }
 
   let unregisteredUser = await UnRegisteredUser.findOne({ email: req.user._json.email });
@@ -74,7 +76,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
   res.cookie("accessTokenRegistration", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
-  return res.redirect("http://localhost:5173/register");
+  return res.redirect(`${FRONTEND_URL}/register`);
 });
 
 export const handleLogout = (req, res) => {

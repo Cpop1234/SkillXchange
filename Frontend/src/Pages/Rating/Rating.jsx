@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Rating.css"; // Assuming your CSS styles are defined in styles.css
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useUser } from "../../util/UserContext";
@@ -10,6 +10,8 @@ const Rating = () => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const { user, setUser } = useUser();
+  const { username } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleStarClick = (starValue) => {
@@ -29,13 +31,22 @@ const Rating = () => {
       toast.error("Please enter a review");
       return;
     }
+    if (!username) {
+      toast.error("Missing target user for rating");
+      return;
+    }
+    if (!user?.username) {
+      toast.error("Please login first");
+      navigate("/login");
+      return;
+    }
     // Assuming you have a backend API endpoint to handle the form data
     try {
       setLoading(true);
       const { data } = await axios.post(`/rating/rateUser`, {
         rating: rating,
         description: review,
-        username: user.username,
+        username: username,
       });
       console.log(data);
       toast.success(data.message);
@@ -51,6 +62,8 @@ const Rating = () => {
           await axios.get("/auth/logout");
           navigate("/login");
         }
+      } else {
+        toast.error("Unable to submit rating right now");
       }
     } finally {
       setLoading(false);

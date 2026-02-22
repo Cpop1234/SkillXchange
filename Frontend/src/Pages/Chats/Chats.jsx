@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useUser } from "../../util/UserContext";
 import Spinner from "react-bootstrap/Spinner";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import io from "socket.io-client";
 import ScrollableFeed from "react-scrollable-feed";
 import RequestCard from "./RequestCard";
@@ -23,6 +23,8 @@ const Chats = () => {
 
   const [scheduleModalShow, setScheduleModalShow] = useState(false);
   const [requestModalShow, setRequestModalShow] = useState(false);
+  const [meetPlanModalShow, setMeetPlanModalShow] = useState(false);
+  const [meetTarget, setMeetTarget] = useState({ username: "", name: "" });
 
   // to store selected chat
   const [selectedChat, setSelectedChat] = useState(null);
@@ -40,8 +42,16 @@ const Chats = () => {
   const { user, setUser } = useUser();
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [scheduleForm, setScheduleForm] = useState({
+    date: "",
+    time: "",
+  });
+
+  const [meetPlanForm, setMeetPlanForm] = useState({
+    wantToLearn: "",
+    canTeach: "",
     date: "",
     time: "",
   });
@@ -49,6 +59,17 @@ const Chats = () => {
   useEffect(() => {
     fetchChats();
   }, []);
+
+  useEffect(() => {
+    const shouldOpenMeetPlan = searchParams.get("meetNow") === "1";
+    if (!shouldOpenMeetPlan) return;
+
+    setMeetTarget({
+      username: searchParams.get("username") || "",
+      name: searchParams.get("name") || "Selected user",
+    });
+    setMeetPlanModalShow(true);
+  }, [searchParams]);
 
   useEffect(() => {
     socket = io(axios.defaults.baseURL);
@@ -73,7 +94,7 @@ const Chats = () => {
     try {
       setChatLoading(true);
       const tempUser = JSON.parse(localStorage.getItem("userInfo"));
-      const { data } = await axios.get("http://localhost:8000/chat");
+      const { data } = await axios.get("/chat");
       // console.log("Chats", data.data);
       toast.success(data.message);
       if (tempUser?._id) {
@@ -113,7 +134,7 @@ const Chats = () => {
   const handleChatClick = async (chatId) => {
     try {
       setChatMessageLoading(true);
-      const { data } = await axios.get(`http://localhost:8000/message/getMessages/${chatId}`);
+      const { data } = await axios.get(`/message/getMessages/${chatId}`);
       setChatMessages(data.data);
       // console.log("Chat Messages:", data.data);
       setMessage("");
@@ -268,6 +289,33 @@ const Chats = () => {
       setAcceptRequestLoading(false);
       setRequestModalShow(false);
     }
+  };
+
+  const handleMeetPlanSubmit = (e) => {
+    e.preventDefault();
+
+    if (!meetPlanForm.wantToLearn || !meetPlanForm.canTeach || !meetPlanForm.date || !meetPlanForm.time) {
+      toast.error("Please fill all meet details");
+      return;
+    }
+
+    const existingPlans = JSON.parse(localStorage.getItem("demoMeetPlans") || "[]");
+    existingPlans.push({
+      target: meetTarget,
+      createdBy: user?.username || "guest_user",
+      ...meetPlanForm,
+      createdAt: new Date().toISOString(),
+    });
+    localStorage.setItem("demoMeetPlans", JSON.stringify(existingPlans));
+
+    toast.success(`Meeting request saved for ${meetTarget.name}`);
+    setMeetPlanModalShow(false);
+    setMeetPlanForm({
+      wantToLearn: "",
+      canTeach: "",
+      date: "",
+      time: "",
+    });
   };
 
   return (
@@ -545,6 +593,90 @@ const Chats = () => {
       </div>
 
       {/* Schedule Video Call Modal */}
+      {meetPlanModalShow && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: "500",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#2d2d2d",
+              color: "#3BB4A1",
+              padding: "30px",
+              borderRadius: "10px",
+              zIndex: "1001",
+              width: "90%",
+              maxWidth: "520px",
+              textAlign: "left",
+            }}
+          >
+            <h3 style={{ textAlign: "center", marginBottom: "16px" }}>Plan a Meet with {meetTarget.name}</h3>
+            <Form onSubmit={handleMeetPlanSubmit}>
+              <Form.Group style={{ marginBottom: "12px" }}>
+                <Form.Label>What do you want to learn?</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={meetPlanForm.wantToLearn}
+                  onChange={(e) => setMeetPlanForm({ ...meetPlanForm, wantToLearn: e.target.value })}
+                  placeholder="e.g. React hooks, interview prep"
+                />
+              </Form.Group>
+
+              <Form.Group style={{ marginBottom: "12px" }}>
+                <Form.Label>What can you teach?</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={meetPlanForm.canTeach}
+                  onChange={(e) => setMeetPlanForm({ ...meetPlanForm, canTeach: e.target.value })}
+                  placeholder="e.g. Node.js APIs, Figma basics"
+                />
+              </Form.Group>
+
+              <Form.Group style={{ marginBottom: "12px" }}>
+                <Form.Label>Preferred Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={meetPlanForm.date}
+                  onChange={(e) => setMeetPlanForm({ ...meetPlanForm, date: e.target.value })}
+                />
+              </Form.Group>
+
+              <Form.Group style={{ marginBottom: "16px" }}>
+                <Form.Label>Preferred Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  value={meetPlanForm.time}
+                  onChange={(e) => setMeetPlanForm({ ...meetPlanForm, time: e.target.value })}
+                />
+              </Form.Group>
+
+              <Button variant="success" type="submit">
+                Submit Meet Request
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => setMeetPlanModalShow(false)}
+                style={{ marginLeft: "10px" }}
+                type="button"
+              >
+                Cancel
+              </Button>
+            </Form>
+          </div>
+        </div>
+      )}
+
       {scheduleModalShow && (
         <div
           style={{

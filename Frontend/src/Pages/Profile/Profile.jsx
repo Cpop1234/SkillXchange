@@ -140,7 +140,7 @@ const Profile = () => {
                 </div>
               </div>
               <div className="edit-links">
-                {user.username === username && (
+                {user?.username === username && (
                   <Link to="/edit_profile">
                     <button className="edit-button">Edit Profile ✎</button>
                   </Link>

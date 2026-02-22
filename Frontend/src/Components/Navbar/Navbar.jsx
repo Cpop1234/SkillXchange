@@ -1,26 +1,30 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { Link } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { useUser } from "../../util/UserContext";
 import { Dropdown } from "react-bootstrap";
-import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const UserProfileDropdown = () => {
-  const { user, setUser } = useUser();
-  const navigate = useNavigate();
+  let user = null;
+  const userInfo = localStorage.getItem("userInfo");
+  if (userInfo) {
+    try {
+      user = JSON.parse(userInfo);
+    } catch (error) {
+      localStorage.removeItem("userInfo");
+    }
+  }
 
   const handleLogout = async () => {
     // Perform logout logic
     localStorage.removeItem("userInfo");
-    setUser(null);
     try {
-      const response = await axios.get("/auth/logout");
-      window.location.href = "http://localhost:5173/login";
+      await axios.get("/auth/logout");
+      window.location.href = `${window.location.origin}/login`;
     } catch (error) {
       console.log(error);
       if (error?.response?.data?.message) {
@@ -59,15 +63,9 @@ const UserProfileDropdown = () => {
   ));
 
   const CustomMenu = React.forwardRef(({ children, style, className, "aria-labelledby": labeledBy }, ref) => {
-    const [value, setValue] = useState("");
-
     return (
       <div ref={ref} style={style} className={className} aria-labelledby={labeledBy}>
-        <ul className="list-unstyled">
-          {React.Children.toArray(children).filter(
-            (child) => !value || child.props.children.toLowerCase().startsWith(value)
-          )}
-        </ul>
+        <ul className="list-unstyled">{React.Children.toArray(children)}</ul>
       </div>
     );
   });
@@ -79,8 +77,11 @@ const UserProfileDropdown = () => {
       <Dropdown.Menu as={CustomMenu}>
         <Dropdown.Item
           onClick={() => {
-            console.log(user.username);
-            navigate(`/profile/${user.username}`);
+            if (!user?.username) {
+              toast.error("Unable to open profile. Please login again.");
+              return;
+            }
+            window.location.href = `${window.location.origin}/profile/${encodeURIComponent(user.username)}`;
           }}
         >
           Profile
@@ -92,33 +93,17 @@ const UserProfileDropdown = () => {
 };
 
 const Header = () => {
-  const [navUser, setNavUser] = useState(null);
-  const { user } = useUser();
-  const [discover, setDiscover] = useState(false);
-
-  useEffect(() => {
-    setNavUser(JSON.parse(localStorage.getItem("userInfo")));
-    // console.log("navUser", navUser);
-  }, [user]);
-
-  useEffect(() => {
-    const handleUrlChange = () => {
-      // Your logic to run when there is a change in the URL
-      console.log("URL has changed:", window.location.href);
-    };
-    window.addEventListener("popstate", handleUrlChange);
-
-    const temp = window.location.href.split("/");
-    const url = temp.pop();
-    if (url.startsWith("discover")) {
-      setDiscover(true);
-    } else {
-      setDiscover(false);
+  let navUser = null;
+  const userInfo = localStorage.getItem("userInfo");
+  if (userInfo) {
+    try {
+      navUser = JSON.parse(userInfo);
+    } catch (error) {
+      console.error("Error parsing userInfo:", error);
+      localStorage.removeItem("userInfo");
     }
-    return () => {
-      window.removeEventListener("popstate", handleUrlChange);
-    };
-  }, [window.location.href]);
+  }
+  const discover = window.location.pathname.startsWith("/discover");
 
   return (
     <>

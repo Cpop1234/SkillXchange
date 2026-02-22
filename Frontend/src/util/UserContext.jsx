@@ -1,20 +1,17 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useState, useEffect, createContext, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const UserContext = createContext();
+const UserContext = createContext({
+  user: null,
+  setUser: () => {},
+});
 
 const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleUrlChange = () => {
-      // Your logic to run when there is a change in the URL
-      console.log("URL has changed:", window.location.href);
-    };
-    window.addEventListener("popstate", handleUrlChange);
     const userInfoString = localStorage.getItem("userInfo");
     if (userInfoString) {
       try {
@@ -22,25 +19,20 @@ const UserContextProvider = ({ children }) => {
         setUser(userInfo);
       } catch (error) {
         console.error("Error parsing userInfo:", error);
+        localStorage.removeItem("userInfo");
+        setUser(null);
       }
     } else {
-      const temp = window.location.href.split("/");
-      const url = temp.pop();
-      console.log("url", url);
-      if (url !== "about_us" && url !== "#why-skill-swap" && url !== "" && url !== "discover" && url !== "register") {
+      const path = location.pathname.replace(/^\//, "");
+      if (path !== "about_us" && path !== "" && path !== "discover" && path !== "register") {
         navigate("/login");
       }
     }
-    return () => {
-      window.removeEventListener("popstate", handleUrlChange);
-    };
-  }, [window.location.href]);
+  }, [location.pathname, navigate]);
 
   return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
 };
 
-const useUser = () => {
-  return useContext(UserContext);
-};
+const useUser = () => useContext(UserContext) ?? { user: null, setUser: () => {} };
 
 export { UserContextProvider, useUser };
