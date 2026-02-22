@@ -26,7 +26,7 @@ services:
       - key: GOOGLE_CALLBACK_URL
         sync: false
 
-  - type: static
+  - type: static_site
     name: skillxchange-frontend
     rootDir: Frontend
     buildCommand: npm install && npm run build
