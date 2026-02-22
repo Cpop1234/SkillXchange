@@ -10,27 +10,44 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 dotenv.config();
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      done(null, profile);
-    }
-  )
-);
+let googleAuthHandler;
+let googleAuthCallback;
 
-export const googleAuthHandler = passport.authenticate("google", {
-  scope: ["profile", "email"],
-});
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "/auth/google/callback",
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        done(null, profile);
+      }
+    )
+  );
 
-export const googleAuthCallback = passport.authenticate("google", {
-  failureRedirect: "http://localhost:5173/login",
-  session: false,
-});
+  googleAuthHandler = passport.authenticate("google", {
+    scope: ["profile", "email"],
+  });
+
+  googleAuthCallback = passport.authenticate("google", {
+    failureRedirect: "http://localhost:5173/login",
+    session: false,
+  });
+} else {
+  console.warn("Google OAuth not configured (GOOGLE_CLIENT_* env vars missing). Skipping GoogleStrategy registration.");
+
+  googleAuthHandler = (req, res) => {
+    return res.status(501).json({ message: "Google OAuth not configured" });
+  };
+
+  googleAuthCallback = (req, res) => {
+    return res.status(501).json({ message: "Google OAuth not configured" });
+  };
+}
+
+export { googleAuthHandler, googleAuthCallback };
 
 export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   console.log("\n******** Inside handleGoogleLoginCallback function ********");
